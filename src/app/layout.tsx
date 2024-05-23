@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
 import { getServerSession } from "next-auth";
 import authOptions from "./api/auth/[...nextauth]/auth-options";
 import AuthProvider from "./api/auth/[...nextauth]/auth-provider";
 import { Toaster } from "react-hot-toast";
+import ThemeLayout from "@/layouts/theme-layout";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,7 +29,7 @@ export default async function RootLayout({
         className={`${inter.className} bg-gray-50 dark:bg-gray-900 text-gray-200`}
       >
         <AuthProvider session={session}>
-          {children}
+          <ThemeLayout session={session}>{children}</ThemeLayout>
           <Toaster position="top-center" reverseOrder={false} />
         </AuthProvider>
       </body>

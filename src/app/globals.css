@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "~bootstrap/dist/css/bootstrap.min.css";
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -17,7 +18,74 @@
 }
 
 body {
- 
+}
+
+.customSelect .css-13cymwt-control,
+.customSelect .css-t3ipsp-control {
+  background-color: rgb(55 65 81);
+  border-color: rgb(75 85 99);
+  color: #fff;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  padding: 0.125rem 0;
+  border-radius: 8px;
+}
+
+.customSelect .css-1jqq78o-placeholder {
+  color: rgb(255 255 255 / 0.6);
+}
+
+.customSelect .css-1dimb5e-singleValue {
+  color: #fff;
+}
+
+.customSelect .css-1nmdiq5-menu {
+  background-color: rgb(55 65 81);
+  border-color: rgb(75 85 99);
+  color: #fff;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.content {
+  width: calc(100% - 300px);
+  position: relative;
+}
+
+.container {
+  max-width: 1199px;
+  margin: auto;
+}
+
+.previewImg {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  object-position: top;
+}
+
+.previewContainer {
+  position: relative;
+}
+
+.previewContainer .cross {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  width: 25px;
+  height: 25px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+  color: #fff;
+  border-radius: 100%;
+  font-size: 19px;
+  cursor: pointer;
+}
+
+.previewContainer:hover .cross {
+  display: flex;
 }
 
 @layer utilities {

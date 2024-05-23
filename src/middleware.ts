@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { pagesOptions } from "@/app/api/auth/[...nextauth]/page-options";
 
 export default async function middleware(req: NextRequest) {
+  const AUTH_ROUTES = ["/"];
   const token = await getToken({
     req,
     secureCookie: process.env.NODE_ENV !== "development",
@@ -11,16 +12,24 @@ export default async function middleware(req: NextRequest) {
   });
   const isAuthenticated = !!token;
 
-  if (req.nextUrl.pathname.startsWith("/signin") && isAuthenticated) {
+  if (
+    (req.nextUrl.pathname.startsWith("/signin") ||
+      req.nextUrl.pathname.startsWith("/signup")) &&
+    isAuthenticated
+  ) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  return await withAuth(req, {
-    secret: "Ie3/BTK4dv7AboOTcB19GfP6vhrwY2Z+/yJsWnRxbsc=",
-    pages: {
-      ...pagesOptions,
-    },
-  });
+  if (AUTH_ROUTES.includes(req.nextUrl.pathname) && !isAuthenticated) {
+    return await withAuth(req, {
+      secret: "Ie3/BTK4dv7AboOTcB19GfP6vhrwY2Z+/yJsWnRxbsc=",
+      pages: {
+        ...pagesOptions,
+      },
+    });
+  }
+
+  return NextResponse.rewrite(req.url);
 }
 
 // config to match all pages

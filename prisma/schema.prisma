@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = ""
+}
+
+model users {
+  id          String   @id @default(cuid()) @map("_id")
+  role      String?
+  name        String?
+  password        String?
+  track        String?
+  email       String?
+  @@index(fields: [id])
+}
+
+model papers {
+  id          String   @id @default(cuid()) @map("_id")
+  title      String?
+  authorId        String?
+  reviewerId     String[]   @default([])
+  file        String?
+  track        String?
+  grade        Json?
+  @@index(fields: [id])
+}
+

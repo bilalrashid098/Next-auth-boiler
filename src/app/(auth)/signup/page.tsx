@@ -6,32 +6,65 @@ import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import ReactSelect from "react-select";
 
 const defaultValues = {
+  name: "",
   email: "",
   password: "",
+  role: "author",
+  track: "internetTechnologies",
 };
+
+const options = [
+  { value: "author", label: "Author" },
+  { value: "reviewer", label: "Reviewer" },
+];
+
+const optionsTrack = [
+  { value: "internetTechnologies", label: "Internet technologies" },
+  { value: "SoftwareAgents", label: "Software Agents" },
+  { value: "eGovernment", label: "E-Government" },
+  { value: "medicine2", label: "Medicine 2.0" },
+  { value: "bioinformatics", label: "Bioinformatics" },
+];
 
 export default function SignUp() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
+    control,
+    setValue,
+    watch,
     formState: { errors },
   }: any = useForm({
     defaultValues: defaultValues,
   });
   const handleSignIn = async (data: any) => {
-    const response: any = await signIn("credentials", {
-      ...data,
-      redirect: false,
-    });
-    if (response?.ok) {
-      router.push(routes.home);
+    setIsLoading(true);
+    const response: any = await fetch("/api/create-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }).then((res) => res.json());
+    if (response.status) {
+      const res: any = await signIn("credentials", {
+        ...data,
+        redirect: false,
+      });
+      if (res?.ok) {
+        setIsLoading(false);
+        router.push(routes.home);
+      }
     } else {
-      toast.error(response?.error);
+      setIsLoading(false);
     }
   };
 
@@ -51,10 +84,10 @@ export default function SignUp() {
           />
           Flowbite
         </Link>
-        <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+        <div className="w-full rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
           <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
             <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-              Sign in to your account
+              Sign up to your account
             </h1>
             <form
               className="space-y-4 md:space-y-6"
@@ -62,7 +95,89 @@ export default function SignUp() {
             >
               <div>
                 <label
-                  htmlFor="password"
+                  htmlFor="role"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Role
+                </label>
+                <Controller
+                  name="role"
+                  control={control}
+                  rules={{
+                    required: true,
+                  }}
+                  render={({ field: { value } }) => (
+                    <ReactSelect
+                      className="customSelect"
+                      value={options.find((item) => item.value === value)}
+                      onChange={(value: any) => {
+                        setValue("role", value.value);
+                      }}
+                      options={options}
+                    />
+                  )}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Name
+                </label>
+                <input
+                  {...register("name", {
+                    required: { value: true, message: "Name is required" },
+                  })}
+                  placeholder="Enter you name"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                />
+                {errors?.name?.message && (
+                  <span className="text-sm font-bold text-red-900">
+                    {errors?.name?.message}
+                  </span>
+                )}
+              </div>
+
+              {watch("role") === "reviewer" && (
+                <div>
+                  <label
+                    htmlFor="role"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Track
+                  </label>
+                  <Controller
+                    name="track"
+                    control={control}
+                    rules={{
+                      required: { value: true, message: "Track is required" },
+                    }}
+                    render={({ field: { value } }) => (
+                      <ReactSelect
+                        className="customSelect"
+                        value={optionsTrack.find(
+                          (item) => item.value === value
+                        )}
+                        onChange={(value: any) => {
+                          setValue("track", value);
+                        }}
+                        options={optionsTrack}
+                      />
+                    )}
+                  />
+                  {errors?.track?.message && (
+                    <span className="text-sm font-bold text-red-900">
+                      {errors?.track?.message}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <div>
+                <label
+                  htmlFor="email"
                   className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
                   Email
@@ -107,14 +222,15 @@ export default function SignUp() {
 
               <Button
                 type="submit"
+                isLoading={isLoading}
                 className="w-full text-white bg-gray-900 hover:bg-gray-700 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center"
               >
                 Sign in
               </Button>
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                Don’t have an account yet?{" "}
+                Already have an account?{" "}
                 <Link
-                  href="/signup"
+                  href={routes.signIn}
                   className="font-medium text-primary-600 hover:underline dark:text-primary-500"
                 >
                   Sign up

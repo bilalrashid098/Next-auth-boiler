@@ -1,6 +1,9 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { pagesOptions } from "./page-options";
+import { adminDB } from "../../../../../lib/db";
+import bcrypt from "bcryptjs";
+
 export const authOptions: NextAuthOptions = {
   secret: "Ie3/BTK4dv7AboOTcB19GfP6vhrwY2Z+/yJsWnRxbsc=",
   pages: {
@@ -55,39 +58,33 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials: any) {
-        // You need to provide your own logic here that takes the credentials
-        // submitted and returns either a object representing a user or value
-        // that is false/null if the credentials are invalid.
-        // e.g. return { id: 1, name: 'J Smith', email: 'jsmith@example.com' }
-        // You can also use the `req` object to obtain additional parameters
-        // (i.e., the request IP address)
-        // const res = await fetch("/your/endpoint", {
-        //   method: "POST",
-        //   body: JSON.stringify(credentials),
-        //   headers: { "Content-Type": "application/json" },
-        // });
-        // const user = await res.json();
-
-        // // If no error and we have user data, return it
-        // if (res.ok && user) {
-        //   return user;
-        // }
         if (credentials == null) return null;
         try {
-          const user = {
-            email: "bilal@yopmail.com",
-            password: "12345",
-            id: "1234",
-          };
+          // const salt = await bcrypt.genSalt(10);
+          // const hash = await bcrypt.hash("admin", salt);
+          // console.log("HASH", hash);
 
-          if (
-            credentials.email === user.email &&
-            credentials.password === user.password
-          ) {
-            return { ...credentials, name: "Bilal" };
+          const user = await adminDB.users.findFirst({
+            where: {
+              email: credentials.email,
+            },
+          });
+
+          if (user) {
+            const isMatch = await bcrypt.compare(
+              credentials.password,
+              user.password
+            );
+
+            if (isMatch) {
+              return user;
+            } else {
+              console.log("Error: Email or password is incorrect");
+              throw new Error("Email or password is incorrect");
+            }
           } else {
-            //   return null
-            throw new Error("Email or password is incorrect");
+            console.log("Error: User not found");
+            throw new Error("User not found");
           }
         } catch (err: any) {
           console.log("Error:", err);
