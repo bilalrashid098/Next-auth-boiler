@@ -1,5 +1,5 @@
 import { calculateAverageGrade } from "@/utils/get-average-grade";
-import { adminDB } from "../../../../lib/db";
+import { adminDB } from "../../../../../lib/db";
 import { NextResponse, NextRequest } from "next/server";
 
 interface RequestInterface {
@@ -10,11 +10,20 @@ export async function POST(req: NextRequest, res: NextResponse) {
   try {
     const { userId }: RequestInterface = (await req.json()) as RequestInterface;
 
-    const collections: any = await adminDB.papers.findMany({
+    const user = await adminDB.users.findFirst({
       where: {
-        authorId: userId,
+        id: userId,
       },
     });
+
+    if (user?.role !== "admin") {
+      return NextResponse.json(
+        { status: false, message: "Only admins are allowed" },
+        { status: 400 }
+      );
+    }
+
+    const collections = await adminDB.papers.findMany({});
 
     if (collections) {
       const updatedCollection = collections?.map((collection: any) => {

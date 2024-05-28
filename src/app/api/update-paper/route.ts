@@ -2,40 +2,48 @@ import { adminDB } from "../../../../lib/db";
 import { NextResponse, NextRequest } from "next/server";
 
 interface RequestInterface {
+  userId: string;
+  id: string;
   file: string;
   title: string;
   track?: string;
-  userId: string;
+  authorId: string;
+  reviewerId: any;
+  grade: any;
 }
 
 export async function POST(req: NextRequest, res: NextResponse) {
   try {
-    const { userId, track, title, file }: RequestInterface =
-      (await req.json()) as RequestInterface;
+    const {
+      id,
+      userId,
+      track,
+      title,
+      file,
+      authorId,
+      reviewerId,
+      grade,
+    }: RequestInterface = (await req.json()) as RequestInterface;
 
-    const collections = await adminDB.papers.create({
+    const collections = await adminDB.papers.update({
+      where: {
+        id,
+      },
       data: {
         file: file,
         title: title,
         track: track,
-        authorId: userId,
+        authorId: authorId,
+        reviewerId: reviewerId,
+        grade: grade,
       },
     });
-
-    const setting: any = await adminDB.setting.findFirst();
-
-    if (setting && new Date() > new Date(setting?.deadline)) {
-      return NextResponse.json(
-        { status: false, message: "You cannot submit paper after deadline" },
-        { status: 400 }
-      );
-    }
 
     if (collections) {
       return NextResponse.json(
         {
           status: true,
-          message: "Paper submitted successfully",
+          message: "Paper updated successfully",
         },
         { status: 200 }
       );

@@ -24,7 +24,14 @@ model papers {
   reviewerId     String[]   @default([])
   file        String?
   track        String?
-  grade        Json?
+  grade        Json[] @default([])
   @@index(fields: [id])
 }
+
+model setting {
+  id          String   @id @default(cuid()) @map("_id")
+  deadline    DateTime?
+  @@index(fields: [id])
+}
+
 

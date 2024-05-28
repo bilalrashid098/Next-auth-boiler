@@ -13,7 +13,16 @@ export async function POST(req: NextRequest, res: NextResponse) {
     const { userId, comment, grade, paperId }: RequestInterface =
       (await req.json()) as RequestInterface;
 
-    const collections = await adminDB.papers.findFirst({
+    const setting: any = await adminDB.setting.findFirst();
+
+    if (setting && new Date() < new Date(setting?.deadline)) {
+      return NextResponse.json(
+        { status: false, message: "You cannot submit grades before deadline" },
+        { status: 400 }
+      );
+    }
+
+    const collections: any = await adminDB.papers.findFirst({
       where: {
         id: paperId,
       },
@@ -26,14 +35,29 @@ export async function POST(req: NextRequest, res: NextResponse) {
         reviewerId: userId,
       };
 
+      // Check if the reviewer has already graded the paper
+      const existingGradeIndex = collections.grade.findIndex(
+        (entry: any) => entry.reviewerId === userId
+      );
+
+      if (existingGradeIndex !== -1) {
+        // Update the existing grade and comment
+        collections.grade[existingGradeIndex].grade = grade;
+        collections.grade[existingGradeIndex].comment = comment;
+      } else {
+        // Add a new grade entry
+        collections.grade.push(data);
+      }
+
       await adminDB.papers.update({
         where: {
           id: paperId,
         },
         data: {
-          grade: collections?.grade ? [...collections?.grade, data] : [data],
+          grade: collections.grade,
         },
       });
+
       return NextResponse.json(
         {
           status: true,

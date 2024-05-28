@@ -46,6 +46,7 @@ export default function SignUp() {
     defaultValues: defaultValues,
   });
   const handleSignIn = async (data: any) => {
+    console.log(data);
     setIsLoading(true);
     const response: any = await fetch("/api/create-user", {
       method: "POST",
@@ -161,7 +162,7 @@ export default function SignUp() {
                           (item) => item.value === value
                         )}
                         onChange={(value: any) => {
-                          setValue("track", value);
+                          setValue("track", value.value);
                         }}
                         options={optionsTrack}
                       />

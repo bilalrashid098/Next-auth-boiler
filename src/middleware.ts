@@ -4,7 +4,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { pagesOptions } from "@/app/api/auth/[...nextauth]/page-options";
 
 export default async function middleware(req: NextRequest) {
-  const AUTH_ROUTES = ["/"];
+  const AUTH_ROUTES = [
+    "/",
+    "/papers",
+    "/create",
+    "/profile",
+    "/review",
+    "/admin/authors",
+    "/admin/reviewers",
+    "/admin/papers",
+    "/admin/setting",
+  ];
   const token = await getToken({
     req,
     secureCookie: process.env.NODE_ENV !== "development",

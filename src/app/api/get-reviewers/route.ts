@@ -2,46 +2,46 @@ import { adminDB } from "../../../../lib/db";
 import { NextResponse, NextRequest } from "next/server";
 
 interface RequestInterface {
-  file: string;
-  title: string;
-  track?: string;
   userId: string;
+  track: string;
 }
 
 export async function POST(req: NextRequest, res: NextResponse) {
   try {
-    const { userId, track, title, file }: RequestInterface =
+    const { userId, track }: RequestInterface =
       (await req.json()) as RequestInterface;
 
-    const collections = await adminDB.papers.create({
-      data: {
-        file: file,
-        title: title,
-        track: track,
-        authorId: userId,
+    const user: any = await adminDB.users.findFirst({
+      where: {
+        id: userId,
       },
     });
 
-    const setting: any = await adminDB.setting.findFirst();
-
-    if (setting && new Date() > new Date(setting?.deadline)) {
+    if (user.role !== "admin") {
       return NextResponse.json(
-        { status: false, message: "You cannot submit paper after deadline" },
-        { status: 400 }
+        { status: false, message: "Only admins are allowed" },
+        { status: 404 }
       );
     }
 
-    if (collections) {
+    const reviewers: any = await adminDB.users.findMany({
+      where: {
+        role: "reviewer",
+      },
+    });
+
+    if (reviewers) {
       return NextResponse.json(
         {
           status: true,
-          message: "Paper submitted successfully",
+          data: reviewers,
+          message: "Reviewers listing successfully",
         },
         { status: 200 }
       );
     } else {
       return NextResponse.json(
-        { status: false, message: "Failed to submit paper" },
+        { status: false, message: "Failed to get papers" },
         { status: 404 }
       );
     }

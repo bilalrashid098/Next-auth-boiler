@@ -27,12 +27,31 @@ export default function Sidebar() {
       label: "Review",
       route: routes.review,
     },
-    // {
-    //   label: "Profile",
-    //   route: routes.profile,
-    // },
   ];
-  const sidebarMenu = user?.role === "author" ? authorMenu : reviwerMenu;
+  const adminMenu = [
+    {
+      label: "Papers",
+      route: routes.adminPapers,
+    },
+    {
+      label: "Authors",
+      route: routes.authors,
+    },
+    {
+      label: "Reviewers",
+      route: routes.reviewers,
+    },
+    {
+      label: "Setting",
+      route: routes.setting,
+    },
+  ];
+  const sidebarMenu =
+    user?.role === "author"
+      ? authorMenu
+      : user?.role === "admin"
+      ? adminMenu
+      : reviwerMenu;
   return (
     <div className="w-[300px] bg-gray-800 p-8">
       <Link

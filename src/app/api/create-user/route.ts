@@ -33,15 +33,28 @@ export async function POST(req: NextRequest, res: NextResponse) {
       );
     }
 
-    const collections = await adminDB.users.create({
-      data: {
-        name: name,
-        email: email,
-        password: hash,
-        role: role,
-        track: track,
-      },
-    });
+    var collections;
+
+    if (role === "reviewer") {
+      collections = await adminDB.users.create({
+        data: {
+          name: name,
+          email: email,
+          password: hash,
+          role: role,
+          track: track,
+        },
+      });
+    } else {
+      collections = await adminDB.users.create({
+        data: {
+          name: name,
+          email: email,
+          password: hash,
+          role: role,
+        },
+      });
+    }
 
     if (collections) {
       const data = {

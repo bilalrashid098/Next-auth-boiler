@@ -1,5 +1,4 @@
-import { calculateAverageGrade } from "@/utils/get-average-grade";
-import { adminDB } from "../../../../lib/db";
+import { adminDB } from "../../../../../lib/db";
 import { NextResponse, NextRequest } from "next/server";
 
 interface RequestInterface {
@@ -10,25 +9,27 @@ export async function POST(req: NextRequest, res: NextResponse) {
   try {
     const { userId }: RequestInterface = (await req.json()) as RequestInterface;
 
-    const collections: any = await adminDB.papers.findMany({
+    const user: any = await adminDB.users.findFirst({
       where: {
-        authorId: userId,
+        id: userId,
       },
     });
 
-    if (collections) {
-      const updatedCollection = collections?.map((collection: any) => {
-        if (collection?.grade?.length > 0) {
-          collection.avgGrade = calculateAverageGrade(collection?.grade);
-        }
-        return collection;
-      });
+    if (user.role !== "admin") {
+      return NextResponse.json(
+        { status: false, message: "Failed to get papers" },
+        { status: 404 }
+      );
+    }
 
+    const collections = await adminDB.setting.findFirst();
+
+    if (collections) {
       return NextResponse.json(
         {
           status: true,
-          data: updatedCollection,
-          message: "Papers listing successfully",
+          data: collections,
+          message: "Deadline fetched successfully",
         },
         { status: 200 }
       );
